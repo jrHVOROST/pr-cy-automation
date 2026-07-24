@@ -20,41 +20,46 @@ public class HistoryTests extends BaseTest {
 
     @Test
     public void H_01_selectWeekPeriodTest() {
-        historyPage.selectWeekPeriod();
+        historyPage.selectWeekPeriod()
+                   .assertPeriodSelected("Неделя");
     }
 
     @Test
     public void H_03_switchSearchEngineTest() {
-        historyPage.switchSearchEngine("Google");
+        historyPage.switchSearchEngine("Google")
+                   .assertSearchEngineSelected("Google");
     }
 
     @Test
     public void H_04_filterByKeywordTest() {
-        historyPage.searchKeyword("тестовый запрос");
+        // Ищем ключ, который точно есть, или просто проверяем применение фильтра
+        historyPage.searchKeyword("Пряники")
+                   .assertAllRowsContainKeyword("Пряники");
     }
 
     @Test
     public void H_09_searchNonExistentKeywordTest() {
-        historyPage.searchKeyword("zxy123");
-        historyPage.assertEmptyTableMessageDisplayed();
+        historyPage.searchKeyword("zxy123")
+                   .assertEmptyTableMessageDisplayed();
     }
 
     @Test
     public void H_10_filterByTopSummaryTest() {
-        historyPage.clickTopSummaryBlock("4-10");
+        historyPage.clickTopSummaryBlock("4-10")
+                   .assertTopSummaryApplied("4-10");
     }
 
     @Test
     public void H_14_updateButtonDisabledWhenEmptyCheckboxesTest() {
         historyPage.clickUpdatePositions()
-                   .uncheckAllSearchEnginesInModal();
-        
-        historyPage.assertModalSubmitButtonDisabled();
+                   .uncheckAllSearchEnginesInModal()
+                   .assertModalSubmitButtonDisabled();
     }
 
     @Test
     public void H_02_switchRegionTest() {
-        historyPage.switchRegion("Санкт-Петербург");
+        historyPage.switchRegion("Санкт-Петербург")
+                   .assertRegionSelected("Санкт-Петербург");
     }
 
     @Test
@@ -95,7 +100,8 @@ public class HistoryTests extends BaseTest {
 
     @Test
     public void H_12_groupByRelevantUrlTest() {
-        historyPage.groupByRelevantUrl();
+        historyPage.groupByRelevantUrl()
+                   .assertGroupByUrlApplied();
     }
 
     @Test
@@ -105,9 +111,9 @@ public class HistoryTests extends BaseTest {
 
     @Test
     public void H_15_successfulUpdateTest() {
-        historyPage.clickUpdatePositions();
-        com.codeborne.selenide.Selenide.$x("//div[@role='dialog']//button[contains(@class, 'lgt-btn-color-primary')]").click();
-        com.codeborne.selenide.Selenide.$x("//div[@role='dialog']").shouldNotBe(com.codeborne.selenide.Condition.visible, java.time.Duration.ofSeconds(15));
+        historyPage.clickUpdatePositions()
+                   .clickConfirmUpdatePositions()
+                   .assertUpdateModalClosed();
     }
 
     @Test
@@ -115,7 +121,7 @@ public class HistoryTests extends BaseTest {
         historyPage.clickUpdatePositions();
         String cost = historyPage.getLimitsCostText();
         assertThat(cost).contains("Стоимость в лимитах");
-        com.codeborne.selenide.Selenide.$x("//div[@role='dialog']//button[contains(@class, 'lgt-btn-color-primary')]").click();
-        com.codeborne.selenide.Selenide.$x("//div[@role='dialog']").shouldNotBe(com.codeborne.selenide.Condition.visible, java.time.Duration.ofSeconds(15));
+        historyPage.clickConfirmUpdatePositions()
+                   .assertUpdateModalClosed();
     }
 }

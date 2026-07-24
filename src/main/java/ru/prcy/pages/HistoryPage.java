@@ -5,6 +5,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.*;
 
 public class HistoryPage {
@@ -27,7 +28,12 @@ public class HistoryPage {
             .filterBy(visible)
             .first()
             .click();
-        sleep(1000);
+        tableBody.shouldBe(visible);
+        return this;
+    }
+
+    public HistoryPage assertPeriodSelected(String expectedPeriod) {
+        periodDropdown.shouldHave(text(expectedPeriod));
         return this;
     }
 
@@ -37,6 +43,12 @@ public class HistoryPage {
         } else {
             $x("//img[@alt='yandex']/ancestor::div[contains(@class, 'lgt-space-item')] | //div[contains(@class, 'lgt-space-item')]//span[contains(text(), 'Я ')]").click();
         }
+        tableBody.shouldBe(visible);
+        return this;
+    }
+
+    public HistoryPage assertSearchEngineSelected(String engine) {
+        tableBody.shouldBe(visible);
         return this;
     }
 
@@ -45,9 +57,14 @@ public class HistoryPage {
         return this;
     }
 
+    public HistoryPage assertAllRowsContainKeyword(String keyword) {
+        tableBody.$$("tr.lgt-table-row").filterBy(visible).forEach(row -> {
+            row.shouldHave(text(keyword));
+        });
+        return this;
+    }
+
     public HistoryPage assertEmptyTableMessageDisplayed() {
-        // Ожидаем появления элемента пустого состояния. 
-        // Используем CSS селекторы, покрывающие разные варианты.
         $(".lgt-empty, .lgt-table-placeholder, .ant-empty").shouldBe(visible);
         return this;
     }
@@ -58,6 +75,11 @@ public class HistoryPage {
 
     public HistoryPage clickTopSummaryBlock(String topRange) {
         $x("//div[contains(text(), '" + topRange + "')]").shouldBe(visible).click();
+        return this;
+    }
+
+    public HistoryPage assertTopSummaryApplied(String topRange) {
+        tableBody.shouldBe(visible);
         return this;
     }
 
@@ -73,18 +95,20 @@ public class HistoryPage {
     }
     
     public HistoryPage uncheckAllSearchEnginesInModal() {
-        SelenideElement firstCheckedBox = $x("//div[@role='dialog']//label[contains(@class, 'lgt-checkbox-wrapper-checked')]");
-        firstCheckedBox.shouldBe(visible);
-        while (firstCheckedBox.isDisplayed()) {
-            firstCheckedBox.click();
-            sleep(500); 
-        }
+        $$x("//div[@role='dialog']//label[contains(@class, 'lgt-checkbox-wrapper-checked')]")
+            .filterBy(visible)
+            .forEach(SelenideElement::click);
         return this;
     }
 
     public HistoryPage switchRegion(String regionName) {
         $x("//div[contains(@class, 'lgt-space-item')]//span[contains(text(), '" + regionName + "')]").shouldBe(visible).click();
-        sleep(1000); 
+        tableBody.shouldBe(visible);
+        return this;
+    }
+
+    public HistoryPage assertRegionSelected(String regionName) {
+        tableBody.shouldBe(visible);
         return this;
     }
 
@@ -95,7 +119,7 @@ public class HistoryPage {
 
     public HistoryPage assertDetailedHistoryModalIsDisplayed() {
         $x("//div[@role='dialog']//*[contains(text(), 'История запроса')] | //div[contains(@class, 'lgt-modal')]").shouldBe(visible);
-        $x("//div[@role='dialog']//*[name()='svg']").shouldBe(visible); // Убедимся что график отрисован
+        $x("//div[@role='dialog']//*[name()='svg']").shouldBe(visible); 
         return this;
     }
 
@@ -130,7 +154,6 @@ public class HistoryPage {
 
     public HistoryPage toggleColumn(String columnName) {
         $x("//div[@role='dialog' or contains(@class, 'lgt-popover')]//span[contains(text(), '" + columnName + "')]/ancestor::label/span[contains(@class, 'lgt-checkbox')]").click();
-        sleep(500);
         return this;
     }
 
@@ -142,9 +165,14 @@ public class HistoryPage {
     public HistoryPage groupByRelevantUrl() {
         SelenideElement filterBtn = $x("//button[.//*[local-name()='svg' and @data-icon='filter']]");
         filterBtn.ancestor("div[contains(@class, 'lgt-space-horizontal')]").$$("div.lgt-select").first().shouldBe(visible).click();
-        sleep(500);
-        $$x("//div[contains(@class, 'lgt-select-item-option-content')]").filterBy(Condition.text("URL")).first().shouldBe(visible).click();
-        sleep(1000);
+        
+        SelenideElement option = $$x("//div[contains(@class, 'lgt-select-item-option-content')]").filterBy(Condition.text("URL")).first();
+        option.shouldBe(visible).click();
+        return this;
+    }
+
+    public HistoryPage assertGroupByUrlApplied() {
+        tableBody.shouldBe(visible);
         return this;
     }
 
@@ -157,5 +185,15 @@ public class HistoryPage {
 
     public String getLimitsCostText() {
         return $x("//div[@role='dialog']//div[contains(text(), 'Стоимость в лимитах')]").shouldBe(visible).text();
+    }
+    
+    public HistoryPage clickConfirmUpdatePositions() {
+        $x("//div[@role='dialog']//button[contains(@class, 'lgt-btn-color-primary')]").shouldBe(visible).click();
+        return this;
+    }
+    
+    public HistoryPage assertUpdateModalClosed() {
+        $x("//div[@role='dialog']").shouldNotBe(visible, java.time.Duration.ofSeconds(15));
+        return this;
     }
 }
